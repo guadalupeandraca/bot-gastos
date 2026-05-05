@@ -173,14 +173,14 @@ async function processMessage(userText) {
   const typingDiv = addMsg('bot typing', 'pensando...');
   const hoy = new Date();
   const fechaHoy = hoy.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-  const mesHoy = hoy.toLocaleDateString("es-AR", { month: "long" });
+  const mesHoy = hoy.toLocaleDateString("es-AR", { month: "long" }).toUpperCase();
  
   const systemPrompt = `Sos un asistente que extrae datos de gastos personales dictados por voz en español rioplatense.
  
 Columnas de la planilla:
 1. FECHA - DD/MM/YYYY
-2. MOVIMIENTO - tipo (Gasto, Compra, Servicio, Combustible, Supermercado, etc)
-3. DESCRIP - descripción breve
+2. MOVIMIENTO - categoría del gasto en MAYÚSCULAS. Usá estas categorías: SUPERMERCADO (verduras, frutas, kiosco, almacén, carnicería, panadería, fiambrería, feria, mercado, supermercado, despensa), COMBUSTIBLE (nafta, gasoil, combustible, YPF, Shell, Axion), FARMACIA (farmacia, medicamentos, remedios), RESTAURANTE (restaurant, comida, almuerzo, cena, delivery, pizza, empanadas, McDonald's, burger), TRANSPORTE (uber, taxi, remis, colectivo, tren, subte, peaje), SERVICIOS (luz, gas, agua, internet, teléfono, EPEC, Telecom), ROPA (ropa, zapatillas, calzado, indumentaria), SALUD (médico, dentista, hospital, clínica, consulta), ENTRETENIMIENTO (cine, teatro, Netflix, Spotify, juego), HOGAR (ferretería, muebles, limpieza, electrodoméstico). Si no encaja en ninguna, usá GASTO GENERAL
+3. DESCRIP - descripción breve en MAYÚSCULAS (ej: "SUPERMERCADO DISCO", "NAFTA YPF", "FARMACIA DEL PUEBLO")
 4. MET PAGO - Efectivo, Débito, Crédito, Transferencia
 5. PAGÓ - G o M. Default: ${config.pagoDefault}
 6. MONTO TOT - número
@@ -190,7 +190,7 @@ Columnas de la planilla:
 10. MONTO PRORRATEADO - igual a montoAPagar
 11. DEBE G - si pagó G: 0, si pagó M: montoAPagar/2
 12. DEBE M - si pagó M: 0, si pagó G: montoAPagar/2
-13. MES - solo el nombre del mes en español en minúsculas, sin año (ej: "mayo", "junio", "enero")
+13. MES - nombre del mes en MAYÚSCULAS sin año (ej: "MAYO", "JUNIO", "ENERO")
  
 Cuando detectes un gasto, respondé SOLO con este JSON sin backticks:
 {"action":"registrar","fecha":"DD/MM/YYYY","movimiento":"...","descrip":"...","metPago":"...","pago":"G","montoTot":0,"cantCuotas":1,"cuotaN":1,"montoAPagar":0,"montoProrr":0,"debeG":0,"debeM":0,"mes":"..."}
