@@ -40,7 +40,7 @@
 <body>
 <div id="app">
   <h1>💰 Bot de Gastos</h1>
-
+ 
   <div id="setup-panel">
     <h3>Configuración <span id="badge-cfg" class="badge no">pendiente</span></h3>
     <label>Groq API Key</label>
@@ -52,7 +52,7 @@
     </select>
     <button id="btn-save">Guardar configuración</button>
   </div>
-
+ 
   <div id="chat-wrap">
     <div id="chat-area">
       <div class="msg bot">Hola! Tocá el 🎤 y contame un gasto, por ejemplo:<br><br>
@@ -68,13 +68,13 @@
     </div>
   </div>
 </div>
-
+ 
 <script>
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxDlEdHsHIRUCtU9XvrFIkGhZHP3LiWop3f0tNhjT-v1usWOkEfrC1um1xWeJRpqq6r/exec';
 let config = {};
 let recognition = null;
 let isRecording = false;
-
+ 
 // Setup speech recognition
 function setupSpeech() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -87,14 +87,14 @@ function setupSpeech() {
   recognition.lang = 'es-AR';
   recognition.continuous = false;
   recognition.interimResults = true;
-
+ 
   recognition.onstart = () => {
     isRecording = true;
     document.getElementById('btn-mic').classList.add('recording');
     document.getElementById('btn-mic').textContent = '⏹';
     document.getElementById('mic-status').textContent = 'Escuchando... hablá ahora';
   };
-
+ 
   recognition.onresult = (e) => {
     let transcript = '';
     for (let i = e.resultIndex; i < e.results.length; i++) {
@@ -105,12 +105,12 @@ function setupSpeech() {
       document.getElementById('mic-status').textContent = '';
     }
   };
-
+ 
   recognition.onerror = (e) => {
     document.getElementById('mic-status').textContent = 'Error: ' + e.error + '. Intentá de nuevo.';
     stopRecording();
   };
-
+ 
   recognition.onend = () => {
     stopRecording();
     const text = document.getElementById('msg-input').value.trim();
@@ -119,14 +119,14 @@ function setupSpeech() {
     }
   };
 }
-
+ 
 function stopRecording() {
   isRecording = false;
   document.getElementById('btn-mic').classList.remove('recording');
   document.getElementById('btn-mic').textContent = '🎤';
   document.getElementById('mic-status').textContent = '';
 }
-
+ 
 document.getElementById('btn-mic').addEventListener('click', () => {
   if (!recognition) return;
   if (isRecording) {
@@ -136,7 +136,7 @@ document.getElementById('btn-mic').addEventListener('click', () => {
     recognition.start();
   }
 });
-
+ 
 document.getElementById('btn-save').addEventListener('click', () => {
   config.groqKey = document.getElementById('groq-key').value.trim();
   config.pagoDefault = document.getElementById('pago-default').value;
@@ -149,7 +149,7 @@ document.getElementById('btn-save').addEventListener('click', () => {
   setupSpeech();
   addMsg('bot', '✅ Listo! Tocá el 🎤 y contame un gasto.');
 });
-
+ 
 function addMsg(role, text) {
   const div = document.createElement('div');
   div.className = 'msg ' + role;
@@ -159,7 +159,7 @@ function addMsg(role, text) {
   area.scrollTop = area.scrollHeight;
   return div;
 }
-
+ 
 async function appendToSheet(fila) {
   await fetch(APPS_SCRIPT_URL, {
     method: 'POST',
@@ -168,15 +168,15 @@ async function appendToSheet(fila) {
     body: JSON.stringify(fila)
   });
 }
-
+ 
 async function processMessage(userText) {
   const typingDiv = addMsg('bot typing', 'pensando...');
   const hoy = new Date();
   const fechaHoy = hoy.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-  const mesHoy = hoy.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
-
+  const mesHoy = hoy.toLocaleDateString("es-AR", { month: "long" });
+ 
   const systemPrompt = `Sos un asistente que extrae datos de gastos personales dictados por voz en español rioplatense.
-
+ 
 Columnas de la planilla:
 1. FECHA - DD/MM/YYYY
 2. MOVIMIENTO - tipo (Gasto, Compra, Servicio, Combustible, Supermercado, etc)
@@ -190,11 +190,11 @@ Columnas de la planilla:
 10. MONTO PRORRATEADO - igual a montoAPagar
 11. DEBE G - si pagó G: 0, si pagó M: montoAPagar/2
 12. DEBE M - si pagó M: 0, si pagó G: montoAPagar/2
-13. MES - mes y año en español (ej: "mayo 2026")
-
+13. MES - solo el nombre del mes en español en minúsculas, sin año (ej: "mayo", "junio", "enero")
+ 
 Cuando detectes un gasto, respondé SOLO con este JSON sin backticks:
 {"action":"registrar","fecha":"DD/MM/YYYY","movimiento":"...","descrip":"...","metPago":"...","pago":"G","montoTot":0,"cantCuotas":1,"cuotaN":1,"montoAPagar":0,"montoProrr":0,"debeG":0,"debeM":0,"mes":"..."}
-
+ 
 Reglas:
 - Hoy es ${fechaHoy}, mes actual: ${mesHoy}
 - Los montos pueden venir escritos en palabras (ej: "cinco mil" = 5000)
@@ -202,7 +202,7 @@ Reglas:
 - Si no se menciona método de pago, usá "Efectivo"
 - montoAPagar = montoTot / cantCuotas (redondear a 2 decimales)
 - Si NO es un gasto, respondé normalmente sin JSON`;
-
+ 
   let replyText = '';
   try {
     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -231,13 +231,13 @@ Reglas:
     addMsg('bot', 'Error: ' + e.message);
     return;
   }
-
+ 
   let parsed = null;
   try {
     const jsonMatch = replyText.match(/\{[\s\S]*\}/);
     if (jsonMatch) parsed = JSON.parse(jsonMatch[0]);
   } catch(e) {}
-
+ 
   if (parsed && parsed.action === 'registrar') {
     const savingDiv = addMsg('bot typing', 'Anotando en la planilla...');
     try {
@@ -260,14 +260,14 @@ Reglas:
     addMsg('bot', replyText || 'No entendí. Intentá de nuevo.');
   }
 }
-
+ 
 function sendMessage(text) {
   if (!text) return;
   addMsg('user', text);
   document.getElementById('msg-input').value = '';
   processMessage(text);
 }
-
+ 
 document.getElementById('btn-send').addEventListener('click', () => {
   sendMessage(document.getElementById('msg-input').value.trim());
 });
